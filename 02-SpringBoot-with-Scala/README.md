@@ -87,7 +87,7 @@ if (noNeedToCalculateResult) {
 ```
 在Scala中使用lazy，便可以减少`if-else`分支结构的层次，使代码逻辑更加清晰可读。对于`LazyDemo`，改写成Scala，也简化了许多：
 
-```
+``` scala
 class LazyDemo {
   lazy val lazyString: String = initialize
 
@@ -104,6 +104,7 @@ class LazyDemo {
   }
 }
 ```
+最初用于演示延迟计算的例子中，如果fun1和fun2并发执行，会带来严重的问题。涉及到双重检测锁(DCL)，请参考阅读清单
 
 ### 代码风格
 
@@ -116,3 +117,4 @@ class LazyDemo {
 6. [Scala: The Good Parts by 扶墙老师](http://vdisk.weibo.com/s/BbtIfGVUtj4-)
 7. [lazy变量与双重检测锁(DCL)](http://hongjiang.info/scala-lazy-and-dcl/)
 8. [Lazy Evaluation](https://en.wikipedia.org/wiki/Lazy_evaluation)
+9. [双重检查锁定与延迟初始化](http://www.infoq.com/cn/articles/double-checked-locking-with-delay-initialization)
