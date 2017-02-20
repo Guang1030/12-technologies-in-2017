@@ -13,9 +13,27 @@
 ### 构建与部署
 本节主要讨论构建工具。在阅读清单2中已经有比较详细的介绍了，这里讨论一些值得注意的细节和改进。
 
+使用`spring-boot-maven-plugin`打包的话实际上会生成一个executable jar，我们执行`java -jar target/spring-boot-with-scala-1.0.jar`便可以运行。然而这并不美好。当我们在服务器上运行这个jar时，最好能有`start.sh`和`stop.sh`脚本管理程序的启动和中止。我们把事先编写好的启动和中止脚本放在bin目录下，然后用`maven-jar-plugin`，`maven-dependency-plugin`和`maven-assembly-plugin`生成`spring-boot-with-scala-1.0-bin.tar.gz`，然后部署到服务器上。
+
+`start.sh`脚本中提供了一种覆盖jar中的application.properites的方法，即使用`spring.config.location`，在本文的项目中将这个配置文件的默认地址设置为`conf/application.properties`，如果没有这个文件，就使用jar中的配置。
 
 
-### 日志与监控
+### 日志
+引入`spring-boot-start-logging`后，Spring Boot会使用slf4j-api和logback作为应用日志框架。Java的日志系统非常混乱，建议阅读材料10，理一下思路。
+
+slf4j很好地解决了日志的性能问题。在处理日志时，我们希望字符串的拼接是lazy的。使用Java 8可以这样解决问题：`logger.debug(() -> "hello " + getValue())`。然而略显啰嗦，slf4j提供了这种方式：`logger.info("hello {}", name)`，不失其优雅。
+
+因为我们是用Scala，所以推荐使用[log4s](https://github.com/Log4s/log4s)。这样就可以愉快地使用Scala的字符串插值特性，而不失其性能。如官网所言：
+
+> Log4s goes even further in that it uses macros to manipulate the execution so that the string interpolations are not even performed unless the logger is enabled. It does this by inspecting the structure of the argument that you pass into the logger.
+
+材料4讲解了Spring1.5.x动态修改日志级别的新特性，本文的示例工程中提供了`loglevel.sh`脚本：
+
+``` bash
+bin/loglevel.sh com.sadhen  # 显示package com.sadhen的日志级别
+bin/loglevel.sh com.sadhen DEBUG # 将package com.sadhen的日志级别设置为DEBUG
+```
+
 
 ## TDD
 ## Scala
@@ -118,3 +136,4 @@ class LazyDemo {
 7. [lazy变量与双重检测锁(DCL)](http://hongjiang.info/scala-lazy-and-dcl/)
 8. [Lazy Evaluation](https://en.wikipedia.org/wiki/Lazy_evaluation)
 9. [双重检查锁定与延迟初始化](http://www.infoq.com/cn/articles/double-checked-locking-with-delay-initialization)
+10. [Java日志系统详解](http://ieye.iteye.com/blog/1924215)
