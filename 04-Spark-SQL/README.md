@@ -1,7 +1,8 @@
 ## 前言
 本文使用Spark SQL的场景是这样的：在公司里面，数据分析师都用Zeppelin的JDBC Interpreter去连接Spark Thrift Server，如果不经过任何配置，很容易就导致某个用户的某个大SQL占用了所有资源，导致其他用户的任务没发执行。
 
-本文的Spark是基于Yarn。
+本文尽可能从使用Spark SQL的角度讨论一些问题，如果你想读Spark SQL的源码分析，请移步至：阅读清单7。
+
 ## SQL Parser
 Spark的SQL Parser是使用antlr4实现的，为了方便阅读源码，我们可以先用sbt，编译一下catalyst这部分源码，从`SqlBase.g4`生成相应的源码。
 
@@ -114,3 +115,4 @@ sc.setLocalProperty("spark.scheduler.pool", "pool1")
 4. [Mastering Apache Spark 2](https://jaceklaskowski.gitbooks.io/mastering-apache-spark/)
 5. [Spark调度（一）：Task调度算法，FIFO还是FAIR](http://www.datastart.cn/tech/2016/07/11/spark-scheduler.html)
 6. https://github.com/antlr/antlr4/blob/master/doc/tree-matching.md
+7. https://mr-dai.github.io/spark.html
