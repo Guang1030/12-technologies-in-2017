@@ -69,7 +69,7 @@ class ParserSpec extends FlatSpec with Matchers {
   }
 }
 ```
-上面的两个例子一个是利用了Spark
+上面的两个例子一个是利用了Spark所建立的语法树，另外一个是利用了antlr4提供的高级功能。在使用Spark SQL Parser之前，掌握一些antlr4的知识非常有必要。
 
 Hive的SQL Parser也可以拿出来用，由于Hive使用的antlr版本比较老(antlr3)，并没有Spark SQL Parser那么易用。
 
