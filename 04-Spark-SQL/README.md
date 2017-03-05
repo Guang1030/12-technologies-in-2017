@@ -3,6 +3,77 @@
 
 本文的Spark是基于Yarn。
 ## SQL Parser
+Spark的SQL Parser是使用antlr4实现的，为了方便阅读源码，我们可以先用sbt，编译一下catalyst这部分源码，从`SqlBase.g4`生成相应的源码。
+
+```
+$ sbt
+> project catalyst
+> compile
+```
+编译完成之后，找到`spark/sql/catalyst/target/scala-2.11/src_managed/main/antlr4`，在Intellij Idea的右键菜单中标记此文件夹为源码文件夹。这样Spark源码中的一些类就能找到相应的代码。
+
+### 使用Spark的SQL Parser
+在实际工作中，我们往往需要使用Spark的SQL Parser解析SQL，得到我们需要的信息。比如，判断一个SQL是那种类型、抽取出SQL中所有的使用到的表。通过阅读6和Spark源码中相关的测试用例可以知道：
+
+``` scala
+package com.sadhen.boilerplate.spark.sql
+
+import org.antlr.v4.runtime.tree.xpath.XPath
+import org.antlr.v4.runtime.{ANTLRInputStream, CommonTokenStream, IntStream}
+import org.apache.spark.sql.catalyst.parser.{SqlBaseLexer, SqlBaseParser}
+import org.apache.spark.sql.catalyst.parser.SqlBaseParser._
+import org.scalatest._
+import collection.JavaConversions.collectionAsScalaIterable
+/**
+  * Created by rendong on 17/3/3.
+  */
+class ParserSpec extends FlatSpec with Matchers {
+
+  class ANTLRNoCaseStringStream(input: String) extends ANTLRInputStream(input) {
+    override def LA(i: Int): Int = {
+      val la = super.LA(i)
+      if (la == 0 || la == IntStream.EOF) la
+      else Character.toUpperCase(la)
+    }
+  }
+
+  private def buildContext[T](command: String)(toResult: SqlBaseParser => T): T = {
+    val lexer = new SqlBaseLexer(new ANTLRNoCaseStringStream(command))
+    val tokenStream = new CommonTokenStream(lexer)
+    val parser = new SqlBaseParser(tokenStream)
+    toResult(parser)
+  }
+
+  "it" should "recognize the type of the SQL" in {
+    buildContext("create database hello") { parse =>
+      parse.statement() match {
+        case statement: CreateDatabaseContext =>
+          println("this is a create database statement")
+          println(s"the database is ${statement.identifier().getText}")
+        case _ =>
+          println("other statement")
+      }
+    }
+  }
+
+  "it" should "list all the db.tb" in {
+    val sql = "select * from db1.tb1 where x in (select id from db2.tb2)"
+    buildContext(sql) { parser =>
+      parser.statement().children.foreach { tree =>
+        val xpath = "//tableIdentifier"
+        XPath.findAll(tree, xpath, parser).foreach { x =>
+          println(x.getText)
+        }
+      }
+    }
+  }
+}
+```
+上面的两个例子一个是利用了Spark
+
+Hive的SQL Parser也可以拿出来用，由于Hive使用的antlr版本比较老(antlr3)，并没有Spark SQL Parser那么易用。
+
+
 ## 作业调度
 ### 配置详解
 依据阅读清单3，Spark作业调度的方式可以这样细分：
