@@ -37,7 +37,24 @@ bin/loglevel.sh com.sadhen DEBUG # 将package com.sadhen的日志级别设置为
 
 
 ## TDD
-测试的话，主要是用spring-boot-test-starter, JUnit 和 ScalaTest。
+测试的话，主要是用spring-boot-starter-test, JUnit 和 ScalaTest。在Maven中声明这些依赖时需要指定scope为test，以表明这些依赖只对测试classpath有效。
+
+### 从Assert开始
+我们可以混用ScalaTest和JUnit，使用了ScalaTest并不意味着不使用JUnit。就像学习Scala，并不能放弃深入学习Java。而是在比较、揣摩两者的差异时，学习如何写出一手高质量的代码。
+
+ScalaTest的assert是一个宏，可以抛出非常可读的Error Message：
+``` scala
+import org.scalatest.Assertions._
+assert(a == b || c >= d)
+// Error message: 1 did not equal 2, and 3 was not greater than or equal to 4
+assert(xs.exists(_ == 4))
+// Error message: List(1, 2, 3) did not contain 4
+```
+
+如果你也恰巧读过Clean Code，是否还记得函数那一章讲到没有参数的函数是最好的，一个参数的函数不复杂，两个参数的函数就需要程序员在时候的时候注意参数的顺序了。三个及以上参数的函数就不太妙了。即使Intellij如此智能，程序员还是很容易犯错。至少，你在使用assertEquals的时候，每一次都需要等IDE的提示出来才能愉快自信的了解的每个参数的真正含义。
+
+### 有依赖注入的类怎么测试
+### ScalaTest和mockito
 
 ## Scala
 前面讲的比较多还是Spring Boot本身，那么为什么要Scala呢？已经有很多比较Java和Scala文章了，这里不赘述。阅读清单中3和6都值得一看。下面简单谈一谈那些尤为重要的Scala特性。
