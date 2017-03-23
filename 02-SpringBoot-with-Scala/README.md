@@ -1,3 +1,4 @@
+@springboot @scala
 # Spring Boot with Scala
 ## 前言
 本文提供一个示例项目，如果你觉得代码更加亲切，请移步至[Spring Boot with Scala](https://github.com/sadhen/spring-boot-with-scala)。
@@ -8,7 +9,7 @@
 ### 开发
 大多数程序员并不聪明也不勤奋。一般而言，从零开始写一个工程实际上非常吃力。所以很多框架都会提供脚手架工程。Spring Boot官网就提供了[start.spring.io](http://start.spring.io)，快速生成脚手架工程。可惜并没有提供Scala相关的脚手架工程。故而，本文的示例项目实际上也是一个脚手架项目。
 
-本文将同时采用Maven和SBT两套构建工具。
+本文将只采用Maven作为构建工具。
 
 ### 构建与部署
 本节主要讨论构建工具。在阅读清单2中已经有比较详细的介绍了，这里讨论一些值得注意的细节和改进。
@@ -36,6 +37,8 @@ bin/loglevel.sh com.sadhen DEBUG # 将package com.sadhen的日志级别设置为
 
 
 ## TDD
+测试的话，主要是用spring-boot-test-starter, JUnit 和 ScalaTest。
+
 ## Scala
 前面讲的比较多还是Spring Boot本身，那么为什么要Scala呢？已经有很多比较Java和Scala文章了，这里不赘述。阅读清单中3和6都值得一看。下面简单谈一谈那些尤为重要的Scala特性。
 
@@ -125,6 +128,30 @@ class LazyDemo {
 最初用于演示延迟计算的例子中，如果fun1和fun2并发执行，会带来严重的问题。涉及到双重检测锁(DCL)，请参考阅读清单7和9。
 
 ### 代码风格
+使用ScalaStyle和scalafmt。scalafmt有IntelliJ的插件。如果是在公司，可以使用SonarQube配置一套团队公用的ScalaStyle配置。
+
+### Utilities
+这里简单谈一谈对一些工具库的选择。基本上我都会选择那些基于久经考验的相关Java库的封装。这些库一般都会提供一些Scala语言特性上的适配，然后提供一些比较友好的DSL。那么为什么不选择pure scala呢？通常情况下，那些pure scala的库会重度依赖Akka，Scalaz等著名的库，由于很多是新造的轮子，并没有经历时间的考验，其实非常buggy。如果你使用它们，你就得做好撸起袖管fork的准备。
+
+#### json4s(JSON)
+推荐使用json4s的jackson support。用好json4s，最好了解一下Scala的模式匹配和隐式转换这两个语言特性。
+
+为什么选择json4s呢，因为json4s提供了非常友好的DSL。
+
+#### gigahorse(HTTP Client)
+之前写过[http4s client的学习笔记](http://sadhen.com/blog/2016/11/27/http4s-client-intro.html)，因为官网的文档语焉不详，所以翻看了测试用例才知道http4s client怎么用。
+
+当然，如果只是翻一下测试用例就能愉快的使用，倒是很好，只不过后来在用http4s的时候碰到一个HTTP 1.1的chunked响应相关的一个坑。鼓捣了很久发现搞不定。而且，http4s默认返回的结果是在scalaz的Task里面的，并不是Scala标准库里面的Future。scalaz又在能力范围之外，所以弃用。
+
+其实，就我的需求很简单：
+1. 这个Http Client支持的方法要完整，比如scalaj-http就不支持PATCH
+2. 使用足够简单，直观，不需要在使用时引入AKKA。play-ws就是一个反例。
+3. 支持返回Future
+4. 在定义URI的时候能够使用直观的DSL，避免字符串拼接
+
+gigahorse满足前三个条件，至于URI的DSL，用scala-uri解决。gigahorse背后是著名的AsyncHttpClient，其实现会比http4s完整很多，不至于会遇到各种bug。
+
+在使用Http Client的时候会涉及到Client的生命周期管理，一般在SpringBoot中，我们可以实现DisposableBean中的方法，在对象销毁的时候关闭Client。
 
 ## Reading List
 1. [Building "Bootiful" Scala Web Applications with Spring Boot](https://github.com/shekhargulati/52-technologies-in-2016/tree/master/37-spring-boot-scala)
@@ -137,3 +164,4 @@ class LazyDemo {
 8. [Lazy Evaluation](https://en.wikipedia.org/wiki/Lazy_evaluation)
 9. [双重检查锁定与延迟初始化](http://www.infoq.com/cn/articles/double-checked-locking-with-delay-initialization)
 10. [Java日志系统详解](http://ieye.iteye.com/blog/1924215)
+11. [Scala URI](https://github.com/NET-A-PORTER/scala-uri)

@@ -1,7 +1,8 @@
+@spark @sql
 ## 前言
 本文使用Spark SQL的场景是这样的：在公司里面，数据分析师都用Zeppelin的JDBC Interpreter去连接Spark Thrift Server，如果不经过任何配置，很容易就导致某个用户的某个大SQL占用了所有资源，导致其他用户的任务没发执行。
 
-本文尽可能从使用Spark SQL的角度讨论一些问题，如果你想读Spark SQL的源码分析，请移步至：阅读清单7。
+本文尽可能从使用Spark SQL的角度讨论一些问题，如果你想读Spark SQL的源码分析，请移步至：阅读清单7和9。
 
 ## SQL Parser
 Spark的SQL Parser是使用antlr4实现的，为了方便阅读源码，我们可以先用sbt，编译一下catalyst这部分源码，从`SqlBase.g4`生成相应的源码。
@@ -73,7 +74,18 @@ class ParserSpec extends FlatSpec with Matchers {
 上面的两个例子一个是利用了Spark所建立的语法树，另外一个是利用了antlr4提供的高级功能。在使用Spark SQL Parser之前，掌握一些antlr4的知识非常有必要。
 
 Hive的SQL Parser也可以拿出来用，由于Hive使用的antlr版本比较老(antlr3)，并没有Spark SQL Parser那么易用。
+## Catalyst
+Databricks官方的博客(阅读清单8)说，Catalyst的可扩展设计目标有二，其一使得将新的优化技术引入到Spark SQL变得更简单，其二让开发者们自由地扩展优化器。那么，Spark SQL目前使用了哪些优化技术，我们（开发者）如何能在Catalyst的基础上扩展，应用特定优化呢？
 
+### 流程
+如图，依次是：
+
+1. analyzing a logical plan to resolve references (`org.apache.spark.sql.catalyst.analysis`)
+2. logical plan optimization (`org.apache.spark.sql.catalyst.optimizer`)
+3. physical planning (`org.apache.spark.sql.execution`)
+4. code generation to compile parts of the query to Java bytecode (`org.apache.spark.sql.catalyst.expressions.codegen`)
+
+![](https://github.com/sadhen/12-technologies-in-2017/raw/master/04-Spark-SQL/assets/spark-catalyst.png)
 
 ## 作业调度
 ### 配置详解
@@ -108,6 +120,8 @@ sc.setLocalProperty("spark.scheduler.pool", "pool1")
 1 row selected (2.559 seconds)
 ```
 
+## UDF
+
 ## Reading List
 1. [搭建Spark源码阅读和调试环境](http://zhihu.com/question/24869894/answer/97339151)
 2. [Spark 2.0 Tuning Guide](http://www.slideshare.net/jcmia1/apache-spark-20-tuning-guide)
@@ -116,3 +130,7 @@ sc.setLocalProperty("spark.scheduler.pool", "pool1")
 5. [Spark调度（一）：Task调度算法，FIFO还是FAIR](http://www.datastart.cn/tech/2016/07/11/spark-scheduler.html)
 6. https://github.com/antlr/antlr4/blob/master/doc/tree-matching.md
 7. https://mr-dai.github.io/spark.html
+8. [Deep Dive into Spark SQL’s Catalyst Optimizer](https://databricks.com/blog/2015/04/13/deep-dive-into-spark-sqls-catalyst-optimizer.html)
+9. [盛利：Spark SQL 源码分析系列文章](http://blog.csdn.net/oopsoom/article/details/38257749)
+10. [Spark性能优化指南——基础篇](http://tech.meituan.com/spark-tuning-basic.html)
+11. [美团点评技术团队：Spark性能优化指南——高级篇](https://zhuanlan.zhihu.com/p/22024169)
