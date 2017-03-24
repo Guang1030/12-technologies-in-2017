@@ -186,6 +186,85 @@ class WebConfig extends WebMvcConfigurerAdapter {
 }
 ```
 
+配置完成之后，我们直接在Rest Controller里面返回普通的Scala对象就可以由jackson将其序列化。另外一种情况是我们自己构造的JValue，则需要转换成JsonNode才能被正确地序列化。对于Http Post中的值的解析，这里也简单举个例子。
+
+``` scala
+@RestController
+@RequestMapping(value = Array("/api"))
+class HelloController {
+  implicit def jvalue2jsonnode(value: JValue): JsonNode = asJsonNode(value)
+  @RequestMapping(value = Array("/hello"))
+  def hello: JsonNode = {
+    val world = "世界"
+    val ret =
+      ("code" -> 0) ~
+        ("data" -> ("hello" -> world) ~ ("year" -> 2017)) ~
+        ("error" -> null)
+
+    asJsonNode(ret)
+  }
+
+  @RequestMapping(value = Array("/echo"), method = Array(RequestMethod.POST))
+  def echo(@RequestBody body: JsonNode): JsonNode = {
+    val json = fromJsonNode(body)
+    (json \ "hello", json \ "year") match {
+      case (JString(world), JInt(year)) =>
+        val ret =
+          ("code" -> 0) ~
+            ("data" -> ("hello" -> world) ~ ("year" -> year)) ~
+            ("error" -> null)
+        asJsonNode(ret)
+      case _ =>
+        val ret =
+          ("code" -> 1) ~
+            ("data" -> null) ~
+            ("error" -> "invalid post body")
+        asJsonNode(ret)
+    }
+  }
+}
+```
+用curl做一下简单测试:
+``` bash
+➜  ~ curl -d '{"hello": "世界", "year": 2017}' -H "Content-Type: application/json" -X POST  http://localhost:8080/api/echo
+{"code":0,"data":{"hello":"世界","year":2017},"error":null}
+➜  ~ curl http://localhost:8080/api/hello
+{"code":0,"data":{"hello":"世界","year":2017},"error":null}
+```
+
+这里asJsonNode比较繁琐，可以用隐式转换让代码更加简洁。
+``` scala
+@RestController
+@RequestMapping(value = Array("/api"))
+class HelloController {
+  implicit def autoAsJsonNode(value: JValue): JsonNode = asJsonNode(value)
+
+  @RequestMapping(value = Array("/hello"))
+  def hello: JsonNode = {
+    val world: String = "世界"
+
+    ("code" -> 0) ~
+      ("data" -> ("hello" -> world) ~ ("year" -> 2017)) ~
+      ("error" -> null)
+  }
+
+  @RequestMapping(value = Array("/echo"), method = Array(RequestMethod.POST))
+  def echo(@RequestBody body: JsonNode): JsonNode = {
+    val json = fromJsonNode(body)
+    (json \ "hello", json \ "year") match {
+      case (JString(world), JInt(year)) =>
+        ("code" -> 0) ~
+          ("data" -> ("hello" -> world) ~ ("year" -> year)) ~
+          ("error" -> null)
+      case _ =>
+        ("code" -> 1) ~
+          ("data" -> null) ~
+          ("error" -> "invalid post body")
+    }
+  }
+}
+```
+
 #### gigahorse(HTTP Client)
 之前写过[http4s client的学习笔记](http://sadhen.com/blog/2016/11/27/http4s-client-intro.html)，因为官网的文档语焉不详，所以翻看了测试用例才知道http4s client怎么用。
 
