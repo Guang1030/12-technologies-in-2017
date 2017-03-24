@@ -151,6 +151,17 @@ class LazyDemo {
 这里简单谈一谈对一些工具库的选择。基本上我都会选择那些基于久经考验的相关Java库的封装。这些库一般都会提供一些Scala语言特性上的适配，然后提供一些比较友好的DSL。那么为什么不选择pure scala呢？通常情况下，那些pure scala的库会重度依赖Akka，Scalaz等著名的库，由于很多是新造的轮子，并没有经历时间的考验，其实非常buggy。如果你使用它们，你就得做好撸起袖管fork的准备。
 
 #### mybatis
+因为大家都习惯用druid和mybatis的组合。所以这里我选择用mybatis。其实slick也非常好用，只不过没有和Spring Boot的集成。写Java的话，大家习惯用lombok，在Scala里面没法用。我们可以用@BeanProperty这个注释做到类似的效果(可惜没法用case class)。
+
+```
+class SQLStatDO {
+  @BeanProperty var id: Long = _
+  @BeanProperty var user: String = _
+  @BeanProperty var age: Int = _
+  @BeanProperty var sex: String = _
+}
+```
+Mybatis的Scala支持好久没有更新了，所以我不用。
 
 #### json4s(JSON)
 推荐使用json4s的jackson support。用好json4s，最好了解一下Scala的模式匹配和隐式转换这两个语言特性。
