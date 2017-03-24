@@ -150,10 +150,41 @@ class LazyDemo {
 ### Utilities
 这里简单谈一谈对一些工具库的选择。基本上我都会选择那些基于久经考验的相关Java库的封装。这些库一般都会提供一些Scala语言特性上的适配，然后提供一些比较友好的DSL。那么为什么不选择pure scala呢？通常情况下，那些pure scala的库会重度依赖Akka，Scalaz等著名的库，由于很多是新造的轮子，并没有经历时间的考验，其实非常buggy。如果你使用它们，你就得做好撸起袖管fork的准备。
 
+#### mybatis
+
 #### json4s(JSON)
 推荐使用json4s的jackson support。用好json4s，最好了解一下Scala的模式匹配和隐式转换这两个语言特性。
 
 为什么选择json4s呢，因为json4s提供了非常友好的DSL。
+
+在构建Rest Controller时，由于Scala的集合和case class不支持直接序列化，我们可以引入
+``` xml
+<dependency>
+  <groupId>com.fasterxml.jackson.module</groupId>
+  <artifactId>jackson-module-scala_${scala.compat.version}</artifactId>
+  <version>2.8.7</version>
+</dependency>
+```
+做一些配置:
+``` scala
+@Configuration
+@EnableWebMvc
+class WebConfig extends WebMvcConfigurerAdapter {
+  override def configureMessageConverters(converters: util.List[HttpMessageConverter[_]]): Unit =
+    converters.add(jackson2HttpMessageConverter())
+
+  @Bean
+  def jackson2HttpMessageConverter(): MappingJackson2HttpMessageConverter =
+    new MappingJackson2HttpMessageConverter(objectMapper())
+
+  @Bean
+  def objectMapper(): ObjectMapper =
+    new ObjectMapper() {
+      setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
+      registerModule(DefaultScalaModule)
+    }
+}
+```
 
 #### gigahorse(HTTP Client)
 之前写过[http4s client的学习笔记](http://sadhen.com/blog/2016/11/27/http4s-client-intro.html)，因为官网的文档语焉不详，所以翻看了测试用例才知道http4s client怎么用。
