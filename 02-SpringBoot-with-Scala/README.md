@@ -54,7 +54,67 @@ assert(xs.exists(_ == 4))
 如果你也恰巧读过Clean Code，是否还记得函数那一章讲到没有参数的函数是最好的，一个参数的函数不复杂，两个参数的函数就需要程序员在时候的时候注意参数的顺序了。三个及以上参数的函数就不太妙了。即使Intellij如此智能，程序员还是很容易犯错。至少，你在使用assertEquals的时候，每一次都需要等IDE的提示出来才能愉快自信的了解的每个参数的真正含义。
 
 ### 有依赖注入的类怎么测试
-### ScalaTest和mockito
+很简单:
+```
+@RunWith(classOf[SpringRunner])
+@SpringBootTest
+class SampleTest {
+  @Autowired
+  var sampleService: SampleService = _
+  
+  def testSampleService = ???
+}
+```
+
+下面这个例子演示了如何测试Rest Controller，其实也很简单，主要是利用了spring-boot-starter-test里面提供的TestRestTemplate。其中有些json4s的语法或许你没有接触过，且看下文。
+``` scala
+@RunWith(classOf[SpringRunner])
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class HelloControllerTest {
+  @Autowired
+  var restTemplate: TestRestTemplate = _
+
+  @Test
+  def testHello(): Unit = {
+    val body = restTemplate.getForObject("/api/hello", classOf[JsonNode])
+    val expected = ("code" -> 0) ~
+      ("data" -> ("hello" -> "中国") ~ ("year" -> 2017)) ~
+      ("error" -> JNull)
+    assert {
+      fromJsonNode(body) == expected
+    }
+  }
+}
+```
+
+但是这种测试有个弊端，由于需要初始化上下文，每次都需要等上好长一段时间。
+
+### ScalaMock
+ScalaMock就是用来解决上文提到的问题的。看代码：
+
+``` scala
+class HelloControllerSpec extends FlatSpec with Matchers with MockFactory {
+
+  "/api/hello" should "be ok" in {
+    val worldService = stub[WorldService]
+    (worldService.getCountry _).when().returns("法国")
+
+    val helloController = new HelloController(worldService)
+
+    val expected = ("code" -> 0) ~
+      ("data" -> ("hello" -> "法国") ~ ("year" -> 2017)) ~
+      ("error" -> JNull)
+
+    assert {
+      fromJsonNode(helloController.hello) == expected
+    }
+  }
+}
+```
+这个例子中，我们mock了一个WorldService，通过指定getCountry方法的返回值定义了worldService的行为模式。从而不需要初始化上下文就可以完成Rest Controller的测试。
+
+### 后记
+这里面还有很多话题没有提及，比如异步的单元测试等等。为什么单元测试那么重要呢，因为实际上单元测试就是第一手的最准确的文档。如果你要用一个开源的库，恰好他的文档写得不够详细，那么多数情况下你都可以从单元测试中获得你的答案。如果遍历它的单元测试都没有找到库的正确用法，或许是你的水平没有到家，更可能的是这个库写得并不好，建议**不要**去使用它。
 
 ## Scala
 前面讲的比较多还是Spring Boot本身，那么为什么要Scala呢？已经有很多比较Java和Scala文章了，这里不赘述。阅读清单中3和6都值得一看。下面简单谈一谈那些尤为重要的Scala特性。
