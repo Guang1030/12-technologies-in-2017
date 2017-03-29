@@ -210,10 +210,10 @@ class LazyDemo {
 ### Utilities
 这里简单谈一谈对一些工具库的选择。基本上我都会选择那些基于久经考验的相关Java库的封装。这些库一般都会提供一些Scala语言特性上的适配，然后提供一些比较友好的DSL。那么为什么不选择pure scala呢？通常情况下，那些pure scala的库会重度依赖Akka，Scalaz等著名的库，由于很多是新造的轮子，并没有经历时间的考验，其实非常buggy。如果你使用它们，你就得做好撸起袖管fork的准备。
 
-#### mybatis
+#### Mybatis
 因为大家都习惯用druid和mybatis的组合。所以这里我选择用mybatis。其实slick也非常好用，只不过没有和Spring Boot的集成。写Java的话，大家习惯用lombok，在Scala里面没法用。我们可以用@BeanProperty这个注释做到类似的效果(可惜没法用case class)。
 
-```
+``` scala
 class SQLStatDO {
   @BeanProperty var id: Long = _
   @BeanProperty var user: String = _
@@ -362,4 +362,16 @@ gigahorse满足前三个条件，至于URI的DSL，用scala-uri解决。gigahors
 8. [Lazy Evaluation](https://en.wikipedia.org/wiki/Lazy_evaluation)
 9. [双重检查锁定与延迟初始化](http://www.infoq.com/cn/articles/double-checked-locking-with-delay-initialization)
 10. [Java日志系统详解](http://ieye.iteye.com/blog/1924215)
-11. [Scala URI](https://github.com/NET-A-PORTER/scala-uri)
+12. [使用用Spring Boot Actuator、Jolokia和Grafana实现准实时监控](http://blog.didispace.com/spring-boot-jolokia-grafana-monitor/)
+
+## Related Project
++ https://github.com/NET-A-PORTER/scala-uri
++ https://github.com/eed3si9n/gigahorse
++ https://github.com/json4s/json4s
++ https://github.com/Log4s/log4s
++ https://github.com/scalatest/scalatest
++ https://github.com/paulbutcher/ScalaMock
++ https://github.com/scalameta/scalafmt
++ https://github.com/scalastyle/scalastyle
++ https://github.com/Sagacify/sonar-scala
++ https://github.com/FasterXML/jackson-module-scala
