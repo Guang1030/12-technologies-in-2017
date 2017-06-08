@@ -122,6 +122,13 @@ sc.setLocalProperty("spark.scheduler.pool", "pool1")
 
 ## UDF
 
+## MISC
+### 编译打包
+不要去编译整个工程，实际上我们可以只编译子模块：
+``` bash
+mvn compile -pl sql/hive-thriftserver -am
+```
+
 ## Reading List
 1. [搭建Spark源码阅读和调试环境](http://zhihu.com/question/24869894/answer/97339151)
 2. [Spark 2.0 Tuning Guide](http://www.slideshare.net/jcmia1/apache-spark-20-tuning-guide)
