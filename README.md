@@ -3,6 +3,8 @@
 
 写作的过程其实也是不断学习的过程，我会把学习过程中阅读的材料都放在文末的阅读清单中。阅读清单的原则是尽可能采用第一手资料和原文链接，且保证原文的质量，最后一点要求是：对于非手册等内容自己必须完整看完，否则完稿时需注明没有看完。
 
+四月到六月农药中毒中，。。。
+
 ## 目录
 1. 一月：[使用Scala.js和SemanticUI做全栈开发]，本文从搭建一个使用Play和Scala.js的脚手架开始，学习Binding.scala的基础用法，并讲解如何利用Binding.scala定制Tag的特点，模仿Ant.Design定制一些兼容的组件
 2. 二月：[Spring Boot with Scala](https://github.com/sadhen/12-technologies-in-2017/tree/master/02-SpringBoot-with-Scala)，本文探讨Spring Boot和Scala的结合。
