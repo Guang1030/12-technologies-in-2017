@@ -1,0 +1,19 @@
+{
+    "attachment_folder": "_v_attachments",
+    "files": [
+    ],
+    "image_folder": "",
+    "recycle_bin_folder": "_v_recycle_bin",
+    "sub_directories": [
+        {
+            "name": "01-Scala.js-and-SemanticUI"
+        },
+        {
+            "name": "07-Macros-and-Annotations"
+        },
+        {
+            "name": "08-Functional-Programming-in-Scala-Note"
+        }
+    ],
+    "version": "1"
+}

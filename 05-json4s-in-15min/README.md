@@ -18,7 +18,7 @@ parse(""" { "numbers" : [1, 2, 3, 4] } """)
 parse(""" { "code": 0, "error": null } """)
 ```
 
-### JValue & Scala对象 -> JSON String
+### JValue -> JSON String
 ``` scala
 import $ivy.`org.json4s::json4s-jackson:3.5.2`
 import org.json4s.jackson.JsonMethods.render
